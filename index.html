@@ -1176,6 +1176,7 @@
                     customizationDetails = {
                         mode: 'bar-solo'
                     };
+                    // adjustedDueback not needed, will use normal calculation
                 } else if (currentBarSplitType === 'equal') {
                     const staffCount = serverNames.length;
                     const totalTipOut = houseOwed + busserOwed + barOwed + expoOwed + eventsOwed;
@@ -1257,10 +1258,12 @@
             // Calculate final values
             let totalTipOut, dueback;
             
-            if (customizationDetails) {
+            if (customizationDetails && customizationDetails.mode !== 'bar-solo') {
+                // Has customization and it's a split mode
                 totalTipOut = houseOwed + busserOwed + barOwed + expoOwed + eventsOwed;
                 dueback = adjustedDueback;
             } else {
+                // No customization, or bar-solo (normal calculation)
                 totalTipOut = houseOwed + busserOwed + barOwed + expoOwed + eventsOwed;
                 dueback = totalCashDue + totalTipOut;
             }
