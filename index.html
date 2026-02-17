@@ -530,37 +530,6 @@
                     Multiple names = equal split unless customization selected below
                 </p>
             </div>
-        </div>
-
-        <div class="card">
-            <h2>Sales Input</h2>
-            <div class="input-group">
-                <label for="totalSales">Total Sales</label>
-                <div class="input-wrapper">
-                    <input type="number" id="totalSales" step="0.01" placeholder="0.00" inputmode="decimal">
-                </div>
-            </div>
-
-            <div class="input-group">
-                <label for="totalCashDue">Total Cash Due</label>
-                <div class="input-wrapper">
-                    <input type="text" id="totalCashDue" placeholder="0.00" inputmode="decimal" pattern="-?[0-9]*\.?[0-9]*">
-                </div>
-            </div>
-
-            <div class="input-group">
-                <label for="foodSales">Food Sales</label>
-                <div class="input-wrapper">
-                    <input type="number" id="foodSales" step="0.01" placeholder="0.00" inputmode="decimal">
-                </div>
-            </div>
-
-            <div class="input-group">
-                <label for="beoSubtotal">BEO Subtotal (if applicable)</label>
-                <div class="input-wrapper">
-                    <input type="number" id="beoSubtotal" step="0.01" placeholder="0.00" inputmode="decimal">
-                </div>
-            </div>
 
             <div class="divider"></div>
 
@@ -642,6 +611,92 @@
                 </div>
             </div>
 
+            <!-- Bar Cashout -->
+            <div class="checkbox-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="barCashoutMode" onchange="toggleBarCashout()">
+                    <span>Bar Cashout (excludes bar tip-out)</span>
+                </label>
+            </div>
+
+            <div id="barCashoutSection" class="custom-section" style="display: none;">
+                <div class="split-type-buttons">
+                    <button type="button" class="split-type-btn active" id="barSoloBtn" onclick="selectBarSplitType('solo')">
+                        Solo
+                    </button>
+                    <button type="button" class="split-type-btn" id="barEqualBtn" onclick="selectBarSplitType('equal')">
+                        Equal Split
+                    </button>
+                    <button type="button" class="split-type-btn" id="barHoursBtn" onclick="selectBarSplitType('hours')">
+                        Hours Split
+                    </button>
+                </div>
+
+                <div id="barSoloSection" class="split-section">
+                    <p style="font-size: 0.85rem; color: var(--text-dim); margin-top: 0.5rem; font-style: italic;">
+                        Solo bartender cashout. Bar tip-out excluded.
+                    </p>
+                </div>
+
+                <div id="barEqualSection" class="split-section" style="display: none;">
+                    <p style="font-size: 0.85rem; color: var(--text-dim); margin-top: 0.5rem; font-style: italic;">
+                        Names entered above will be split equally. Bar tip-out excluded.
+                    </p>
+                </div>
+
+                <div id="barHoursSection" class="split-section" style="display: none;">
+                    <div id="barHoursInputs">
+                        <div class="hours-entry">
+                            <div class="input-row">
+                                <div class="input-group" style="flex: 2; margin-right: 0.5rem;">
+                                    <label>Name</label>
+                                    <input type="text" class="bar-hours-name" placeholder="Enter name">
+                                </div>
+                                <div class="input-group" style="flex: 1;">
+                                    <label>Hours</label>
+                                    <input type="number" class="bar-hours-worked" step="0.5" min="0" placeholder="0.0" inputmode="decimal">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="add-hours-btn" onclick="addBarHoursEntry()">+ Add Bartender</button>
+                    <p style="font-size: 0.85rem; color: var(--text-dim); margin-top: 0.75rem; font-style: italic;">
+                        Dueback will be split proportionally based on hours worked. Bar tip-out excluded.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Sales Input</h2>
+            <div class="input-group">
+                <label for="totalSales">Total Sales</label>
+                <div class="input-wrapper">
+                    <input type="number" id="totalSales" step="0.01" placeholder="0.00" inputmode="decimal">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="totalCashDue">Total Cash Due</label>
+                <div class="input-wrapper">
+                    <input type="text" id="totalCashDue" placeholder="0.00" inputmode="decimal" pattern="-?[0-9]*\.?[0-9]*">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="foodSales">Food Sales</label>
+                <div class="input-wrapper">
+                    <input type="number" id="foodSales" step="0.01" placeholder="0.00" inputmode="decimal">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="beoSubtotal">BEO Subtotal (if applicable)</label>
+                <div class="input-wrapper">
+                    <input type="number" id="beoSubtotal" step="0.01" placeholder="0.00" inputmode="decimal">
+                </div>
+            </div>
+
             <button class="button" onclick="calculate()">Calculate Cashout</button>
         </div>
 
@@ -713,6 +768,7 @@
 
         let calculatedResults = null;
         let currentBartenderSplitType = 'equal';
+        let currentBarSplitType = 'solo';
 
         function toggleSplitOptions() {
             const checkbox = document.getElementById('splitOptionsMode');
@@ -721,7 +777,9 @@
             if (checkbox.checked) {
                 section.style.display = 'block';
                 document.getElementById('sharedWithBartenderMode').checked = false;
+                document.getElementById('barCashoutMode').checked = false;
                 toggleSharedWithBartender();
+                toggleBarCashout();
                 
                 // Auto-populate with server names
                 populateHoursFromServerNames();
@@ -786,7 +844,9 @@
             if (checkbox.checked) {
                 section.style.display = 'block';
                 document.getElementById('splitOptionsMode').checked = false;
+                document.getElementById('barCashoutMode').checked = false;
                 toggleSplitOptions();
+                toggleBarCashout();
                 
                 // Auto-populate with server names when hours-based is selected
                 if (currentBartenderSplitType === 'hours') {
@@ -861,6 +921,92 @@
             container.appendChild(newEntry);
         }
 
+        function toggleBarCashout() {
+            const checkbox = document.getElementById('barCashoutMode');
+            const section = document.getElementById('barCashoutSection');
+            
+            if (checkbox.checked) {
+                section.style.display = 'block';
+                document.getElementById('splitOptionsMode').checked = false;
+                document.getElementById('sharedWithBartenderMode').checked = false;
+                toggleSplitOptions();
+                toggleSharedWithBartender();
+                
+                // Auto-populate with server names when hours is selected
+                if (currentBarSplitType === 'hours') {
+                    populateBarHoursFromServerNames();
+                }
+            } else {
+                section.style.display = 'none';
+            }
+        }
+
+        function selectBarSplitType(type) {
+            currentBarSplitType = type;
+            
+            document.getElementById('barSoloBtn').classList.toggle('active', type === 'solo');
+            document.getElementById('barEqualBtn').classList.toggle('active', type === 'equal');
+            document.getElementById('barHoursBtn').classList.toggle('active', type === 'hours');
+            
+            document.getElementById('barSoloSection').style.display = type === 'solo' ? 'block' : 'none';
+            document.getElementById('barEqualSection').style.display = type === 'equal' ? 'block' : 'none';
+            document.getElementById('barHoursSection').style.display = type === 'hours' ? 'block' : 'none';
+            
+            // Auto-populate when switching to hours-based
+            if (type === 'hours') {
+                populateBarHoursFromServerNames();
+            }
+        }
+
+        function populateBarHoursFromServerNames() {
+            const serverNamesInput = document.getElementById('serverNames').value.trim();
+            if (!serverNamesInput) return;
+            
+            const serverNames = serverNamesInput.split(',').map(s => s.trim()).filter(s => s);
+            const container = document.getElementById('barHoursInputs');
+            
+            // Clear existing entries
+            container.innerHTML = '';
+            
+            // Add one entry per server
+            serverNames.forEach(name => {
+                const newEntry = document.createElement('div');
+                newEntry.className = 'hours-entry';
+                newEntry.innerHTML = `
+                    <div class="input-row">
+                        <div class="input-group" style="flex: 2; margin-right: 0.5rem;">
+                            <label>Name</label>
+                            <input type="text" class="bar-hours-name" placeholder="Enter name" value="${name}">
+                        </div>
+                        <div class="input-group" style="flex: 1;">
+                            <label>Hours</label>
+                            <input type="number" class="bar-hours-worked" step="0.5" min="0" placeholder="0.0" inputmode="decimal">
+                        </div>
+                    </div>
+                `;
+                container.appendChild(newEntry);
+            });
+        }
+
+        function addBarHoursEntry() {
+            const container = document.getElementById('barHoursInputs');
+            const newEntry = document.createElement('div');
+            newEntry.className = 'hours-entry';
+            newEntry.innerHTML = `
+                <div class="input-row">
+                    <div class="input-group" style="flex: 2; margin-right: 0.5rem;">
+                        <label>Name</label>
+                        <input type="text" class="bar-hours-name" placeholder="Enter name">
+                    </div>
+                    <div class="input-group" style="flex: 1;">
+                        <label>Hours</label>
+                        <input type="number" class="bar-hours-worked" step="0.5" min="0" placeholder="0.0" inputmode="decimal">
+                    </div>
+                </div>
+            `;
+            container.appendChild(newEntry);
+        }
+
         function calculate() {
             const cashoutDate = document.getElementById('cashoutDate').value;
             const cashoutId = document.getElementById('cashoutId').value.trim();
@@ -873,6 +1019,7 @@
             // Check customization modes
             const splitOptionsMode = document.getElementById('splitOptionsMode').checked;
             const sharedWithBartenderMode = document.getElementById('sharedWithBartenderMode').checked;
+            const barCashoutMode = document.getElementById('barCashoutMode').checked;
 
             // Validation
             if (!serverNamesInput) {
@@ -1019,7 +1166,79 @@
                     };
                 }
             }
-            // MODE 3: Auto-split from multiple names (no customization)
+            // MODE 3: Bar Cashout
+            else if (barCashoutMode) {
+                barOwed = 0; // Exclude bar tip
+
+                if (currentBarSplitType === 'solo') {
+                    // Solo bartender - normal calculation with no bar tip
+                    // No split, just exclude bar tip-out
+                    customizationDetails = {
+                        mode: 'bar-solo'
+                    };
+                } else if (currentBarSplitType === 'equal') {
+                    const staffCount = serverNames.length;
+                    const totalTipOut = houseOwed + busserOwed + barOwed + expoOwed + eventsOwed;
+                    const normalDueback = totalCashDue + totalTipOut;
+                    adjustedDueback = normalDueback / staffCount;
+
+                    customizationDetails = {
+                        mode: 'bar-equal',
+                        staffList: serverNames,
+                        staffCount: staffCount,
+                        totalDueback: normalDueback,
+                        sharePerPerson: adjustedDueback
+                    };
+                } else if (currentBarSplitType === 'hours') {
+                    const hoursEntries = document.querySelectorAll('#barHoursInputs .hours-entry');
+                    const hoursData = [];
+                    let totalHours = 0;
+                    let hasEmptyFields = false;
+
+                    for (let entry of hoursEntries) {
+                        const nameInput = entry.querySelector('.bar-hours-name');
+                        const hoursInput = entry.querySelector('.bar-hours-worked');
+                        
+                        if (!nameInput || !hoursInput) continue;
+                        
+                        const name = nameInput.value.trim();
+                        const hours = parseFloat(hoursInput.value) || 0;
+                        
+                        if (name && hours > 0) {
+                            hoursData.push({ name, hours });
+                            totalHours += hours;
+                        } else if (name && hours === 0) {
+                            hasEmptyFields = true;
+                        }
+                    }
+
+                    if (hasEmptyFields) {
+                        alert('Please enter hours for all bartenders (must be greater than 0)');
+                        return;
+                    }
+
+                    if (hoursData.length === 0) {
+                        alert('Please enter at least one bartender with hours');
+                        return;
+                    }
+
+                    const totalTipOut = houseOwed + busserOwed + barOwed + expoOwed + eventsOwed;
+                    const normalDueback = totalCashDue + totalTipOut;
+                    
+                    const firstServerHours = hoursData[0]?.hours || 0;
+                    const serverHoursPercent = firstServerHours / totalHours;
+                    adjustedDueback = normalDueback * serverHoursPercent;
+
+                    customizationDetails = {
+                        mode: 'bar-hours',
+                        hoursData: hoursData,
+                        totalHours: totalHours,
+                        totalDueback: normalDueback,
+                        serverShare: adjustedDueback
+                    };
+                }
+            }
+            // MODE 4: Auto-split from multiple names (no customization)
             else if (serverNames.length > 1) {
                 const staffCount = serverNames.length;
                 const totalTipOut = houseOwed + busserOwed + barOwed + expoOwed + eventsOwed;
