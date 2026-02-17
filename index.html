@@ -141,10 +141,6 @@
             font-size: 1.1rem;
         }
 
-        .input-wrapper input {
-            padding-left: 2.5rem; /* Extra space for $ symbol */
-        }
-
         input[type="text"],
         input[type="number"],
         input[type="date"] {
@@ -158,6 +154,12 @@
             font-family: 'DM Mono', monospace;
             font-weight: 500;
             transition: all 0.3s ease;
+        }
+
+        /* Override padding for inputs with $ symbol - must come after general input styles */
+        .input-wrapper input {
+            padding-left: 3rem !important; /* Extra space for $ symbol */
+        }
         }
 
         .input-wrapper input[type="number"] {
