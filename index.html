@@ -909,6 +909,7 @@
                 const hoursEntries = document.querySelectorAll('.hours-entry');
                 const hoursData = [];
                 let totalHours = 0;
+                let hasEmptyFields = false;
 
                 for (let entry of hoursEntries) {
                     const name = entry.querySelector('.hours-name').value.trim();
@@ -917,7 +918,14 @@
                     if (name && hours > 0) {
                         hoursData.push({ name, hours });
                         totalHours += hours;
+                    } else if (name && hours === 0) {
+                        hasEmptyFields = true;
                     }
+                }
+
+                if (hasEmptyFields) {
+                    alert('Please enter hours for all team members (must be greater than 0)');
+                    return;
                 }
 
                 if (hoursData.length === 0) {
@@ -933,7 +941,7 @@
                 adjustedDueback = normalDueback * serverHoursPercent;
 
                 customizationDetails = {
-                    mode: 'hours_split',
+                    mode: 'split-hours',
                     hoursData: hoursData,
                     totalHours: totalHours,
                     totalDueback: normalDueback,
@@ -951,7 +959,7 @@
                     adjustedDueback = normalDueback / staffCount;
 
                     customizationDetails = {
-                        mode: 'bartender_equal',
+                        mode: 'split-w/bar-equal',
                         staffList: serverNames,
                         staffCount: staffCount,
                         totalDueback: normalDueback,
@@ -961,6 +969,7 @@
                     const hoursEntries = document.querySelectorAll('#bartenderHoursInputs .hours-entry');
                     const hoursData = [];
                     let totalHours = 0;
+                    let hasEmptyFields = false;
 
                     for (let entry of hoursEntries) {
                         const name = entry.querySelector('.bartender-hours-name').value.trim();
@@ -969,7 +978,14 @@
                         if (name && hours > 0) {
                             hoursData.push({ name, hours });
                             totalHours += hours;
+                        } else if (name && hours === 0) {
+                            hasEmptyFields = true;
                         }
+                    }
+
+                    if (hasEmptyFields) {
+                        alert('Please enter hours for all team members (must be greater than 0)');
+                        return;
                     }
 
                     if (hoursData.length === 0) {
@@ -985,7 +1001,7 @@
                     adjustedDueback = normalDueback * serverHoursPercent;
 
                     customizationDetails = {
-                        mode: 'bartender_hours',
+                        mode: 'split-w/bar-hours',
                         hoursData: hoursData,
                         totalHours: totalHours,
                         totalDueback: normalDueback,
@@ -1001,7 +1017,7 @@
                 adjustedDueback = normalDueback / staffCount;
 
                 customizationDetails = {
-                    mode: 'auto_equal',
+                    mode: 'split-equal',
                     staffList: serverNames,
                     staffCount: staffCount,
                     totalDueback: normalDueback,
@@ -1090,7 +1106,7 @@
             
             let html = '<div style="margin-top: 1rem; padding: 0.75rem; background: rgba(0,0,0,0.2); border-radius: 6px; font-size: 0.85rem;">';
             
-            if (details.mode === 'hours_split') {
+            if (details.mode === 'split-hours') {
                 html += '<strong>Hours-Based Split:</strong><br>';
                 details.hoursData.forEach(person => {
                     const percent = (person.hours / details.totalHours * 100).toFixed(1);
@@ -1100,14 +1116,14 @@
                 html += `<br><strong>Total Hours:</strong> ${details.totalHours}`;
                 html += `<br><strong>Total Dueback:</strong> ${formatCurrency(details.totalDueback)}`;
                 
-            } else if (details.mode === 'bartender_equal') {
+            } else if (details.mode === 'split-w/bar-equal') {
                 html += '<strong>Shared With Bartender (Equal):</strong><br>';
                 html += '• ' + details.staffList.join('<br>• ');
                 html += `<br><br><strong>Total Dueback:</strong> ${formatCurrency(details.totalDueback)}`;
                 html += `<br><strong>Each person owes:</strong> ${formatCurrency(details.sharePerPerson)}`;
                 html += '<br><strong>Bar tip-out:</strong> EXCLUDED';
                 
-            } else if (details.mode === 'bartender_hours') {
+            } else if (details.mode === 'split-w/bar-hours') {
                 html += '<strong>Shared With Bartender (Hours):</strong><br>';
                 details.hoursData.forEach(person => {
                     const percent = (person.hours / details.totalHours * 100).toFixed(1);
@@ -1118,7 +1134,7 @@
                 html += `<br><strong>Total Dueback:</strong> ${formatCurrency(details.totalDueback)}`;
                 html += '<br><strong>Bar tip-out:</strong> EXCLUDED';
                 
-            } else if (details.mode === 'auto_equal') {
+            } else if (details.mode === 'split-equal') {
                 html += '<strong>Auto Equal Split:</strong><br>';
                 html += '• ' + details.staffList.join('<br>• ');
                 html += `<br><br><strong>Total Dueback:</strong> ${formatCurrency(details.totalDueback)}`;
@@ -1152,11 +1168,11 @@
             // If customization is active, apply split
             if (calculatedResults.customizationDetails) {
                 const details = calculatedResults.customizationDetails;
-                if (details.mode === 'hours_split' || details.mode === 'bartender_hours') {
+                if (details.mode === 'split-hours' || details.mode === 'split-w/bar-hours') {
                     const firstServerHours = details.hoursData[0]?.hours || 0;
                     const serverHoursPercent = firstServerHours / details.totalHours;
                     dueback = dueback * serverHoursPercent;
-                } else if (details.mode === 'auto_equal' || details.mode === 'bartender_equal') {
+                } else if (details.mode === 'split-equal' || details.mode === 'split-w/bar-equal') {
                     dueback = dueback / details.staffCount;
                 }
             }
