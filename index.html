@@ -169,6 +169,13 @@
             box-shadow: 0 0 0 4px rgba(78, 205, 196, 0.1);
         }
 
+        /* Style the date picker calendar icon */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            filter: invert(58%) sepia(78%) saturate(494%) hue-rotate(130deg) brightness(95%) contrast(89%);
+            /* This makes the icon teal colored */
+        }
+
         input::placeholder {
             color: var(--text-dim);
             opacity: 0.5;
@@ -541,7 +548,7 @@
             <div class="input-group">
                 <label for="totalCashDue">Total Cash Due</label>
                 <div class="input-wrapper">
-                    <input type="number" id="totalCashDue" step="0.01" placeholder="0.00" inputmode="decimal">
+                    <input type="text" id="totalCashDue" placeholder="0.00" inputmode="decimal" pattern="-?[0-9]*\.?[0-9]*">
                 </div>
             </div>
 
@@ -650,28 +657,30 @@
                 
                 <div class="result-row">
                     <span class="result-label">House (3.5%)</span>
-                    <span class="result-value" id="houseOwed">$0.00</span>
+                    <input type="text" id="houseOwedEdit" inputmode="decimal" style="width: 120px; padding: 0.5rem; background: rgba(0,0,0,0.3); border: 2px solid var(--secondary); border-radius: 8px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 1.1rem; text-align: right;">
                 </div>
                 <div class="result-row">
                     <span class="result-label">Busser (1%)</span>
-                    <span class="result-value" id="busserOwed">$0.00</span>
+                    <input type="text" id="busserOwedEdit" inputmode="decimal" style="width: 120px; padding: 0.5rem; background: rgba(0,0,0,0.3); border: 2px solid var(--secondary); border-radius: 8px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 1.1rem; text-align: right;">
                 </div>
                 <div class="result-row">
                     <span class="result-label">Bar (1%)</span>
-                    <span class="result-value" id="barOwed">$0.00</span>
+                    <input type="text" id="barOwedEdit" inputmode="decimal" style="width: 120px; padding: 0.5rem; background: rgba(0,0,0,0.3); border: 2px solid var(--secondary); border-radius: 8px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 1.1rem; text-align: right;">
                 </div>
                 <div class="result-row">
                     <span class="result-label">Expo (1.5%)</span>
-                    <span class="result-value" id="expoOwed">$0.00</span>
+                    <input type="text" id="expoOwedEdit" inputmode="decimal" style="width: 120px; padding: 0.5rem; background: rgba(0,0,0,0.3); border: 2px solid var(--secondary); border-radius: 8px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 1.1rem; text-align: right;">
                 </div>
                 <div class="result-row">
                     <span class="result-label">Events (1% BEO)</span>
-                    <span class="result-value" id="eventsOwed">$0.00</span>
+                    <input type="text" id="eventsOwedEdit" inputmode="decimal" style="width: 120px; padding: 0.5rem; background: rgba(0,0,0,0.3); border: 2px solid var(--secondary); border-radius: 8px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 1.1rem; text-align: right;">
                 </div>
                 <div class="result-row" style="border-top: 2px solid var(--secondary); margin-top: 0.5rem; padding-top: 0.75rem;">
                     <span class="result-label" style="font-weight: 700; color: var(--secondary);">Total Tip-Out</span>
                     <span class="result-value" style="font-weight: 700; color: var(--secondary); font-size: 1.2rem;" id="totalTipOut">$0.00</span>
                 </div>
+
+                <button class="button" onclick="recalculateDueback()" style="margin-top: 1rem; background: var(--secondary);">Recalculate Dueback</button>
 
                 <div class="divider"></div>
 
@@ -683,7 +692,7 @@
 
                 <div id="customDetails" style="display: none;"></div>
 
-                <button class="button submit-button" onclick="submitToSheet()">Submit to Google Sheets</button>
+                <button class="button submit-button" onclick="submitToSheet()">Submit Cashout</button>
                 <button class="button reset-button" onclick="resetForm()">New Entry</button>
             </div>
         </div>
@@ -693,11 +702,13 @@
         // Display current date and set default cashout date
         const dateDisplay = document.getElementById('dateDisplay');
         const today = new Date();
-        const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+        const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', timeZone: 'America/Vancouver' };
         dateDisplay.textContent = today.toLocaleDateString('en-US', options);
 
         const cashoutDateInput = document.getElementById('cashoutDate');
-        const todayString = today.toISOString().split('T')[0];
+        // Get date in Pacific timezone (Vancouver)
+        const pacificDate = new Date(today.toLocaleString('en-US', { timeZone: 'America/Vancouver' }));
+        const todayString = pacificDate.toISOString().split('T')[0];
         cashoutDateInput.value = todayString;
 
         let calculatedResults = null;
@@ -963,12 +974,12 @@
                 customizationDetails
             };
 
-            // Display results
-            document.getElementById('houseOwed').textContent = formatCurrency(houseOwed);
-            document.getElementById('busserOwed').textContent = formatCurrency(busserOwed);
-            document.getElementById('barOwed').textContent = barOwed > 0 ? formatCurrency(barOwed) : '$0.00 (excluded)';
-            document.getElementById('expoOwed').textContent = formatCurrency(expoOwed);
-            document.getElementById('eventsOwed').textContent = formatCurrency(eventsOwed);
+            // Display results in editable fields
+            document.getElementById('houseOwedEdit').value = houseOwed.toFixed(2);
+            document.getElementById('busserOwedEdit').value = busserOwed.toFixed(2);
+            document.getElementById('barOwedEdit').value = barOwed.toFixed(2);
+            document.getElementById('expoOwedEdit').value = expoOwed.toFixed(2);
+            document.getElementById('eventsOwedEdit').value = eventsOwed.toFixed(2);
             document.getElementById('totalTipOut').textContent = formatCurrency(totalTipOut);
             
             // Dueback display with color coding
@@ -1049,6 +1060,60 @@
         function formatCurrency(value) {
             const formatted = Math.abs(value).toFixed(2);
             return value < 0 ? '-$' + formatted : '$' + formatted;
+        }
+
+        function recalculateDueback() {
+            if (!calculatedResults) return;
+            
+            // Get edited values
+            const houseOwed = parseFloat(document.getElementById('houseOwedEdit').value) || 0;
+            const busserOwed = parseFloat(document.getElementById('busserOwedEdit').value) || 0;
+            const barOwed = parseFloat(document.getElementById('barOwedEdit').value) || 0;
+            const expoOwed = parseFloat(document.getElementById('expoOwedEdit').value) || 0;
+            const eventsOwed = parseFloat(document.getElementById('eventsOwedEdit').value) || 0;
+            
+            const totalTipOut = houseOwed + busserOwed + barOwed + expoOwed + eventsOwed;
+            const totalCashDue = calculatedResults.totalCashDue;
+            let dueback = totalCashDue + totalTipOut;
+            
+            // If customization is active, apply split
+            if (calculatedResults.customizationDetails) {
+                const details = calculatedResults.customizationDetails;
+                if (details.mode === 'hours_split' || details.mode === 'bartender_hours') {
+                    const firstServerHours = details.hoursData[0]?.hours || 0;
+                    const serverHoursPercent = firstServerHours / details.totalHours;
+                    dueback = dueback * serverHoursPercent;
+                } else if (details.mode === 'auto_equal' || details.mode === 'bartender_equal') {
+                    dueback = dueback / details.staffCount;
+                }
+            }
+            
+            // Update display
+            document.getElementById('totalTipOut').textContent = formatCurrency(totalTipOut);
+            
+            const duebackDisplay = document.getElementById('duebackDisplay');
+            const duebackFull = document.getElementById('duebackFull');
+            
+            if (dueback < 0) {
+                duebackDisplay.style.background = 'linear-gradient(135deg, rgba(95, 208, 104, 0.2), rgba(75, 192, 87, 0.2))';
+                duebackDisplay.style.border = '2px solid var(--success)';
+                duebackFull.style.color = 'var(--success)';
+                duebackFull.textContent = 'Dueback: -' + formatCurrency(Math.abs(dueback));
+            } else {
+                duebackDisplay.style.background = 'linear-gradient(135deg, rgba(255, 94, 91, 0.2), rgba(255, 107, 53, 0.2))';
+                duebackDisplay.style.border = '2px solid var(--error)';
+                duebackFull.style.color = 'var(--error)';
+                duebackFull.textContent = 'Submit: ' + formatCurrency(dueback);
+            }
+            
+            // Update calculatedResults with edited values
+            calculatedResults.houseOwed = houseOwed;
+            calculatedResults.busserOwed = busserOwed;
+            calculatedResults.barOwed = barOwed;
+            calculatedResults.expoOwed = expoOwed;
+            calculatedResults.eventsOwed = eventsOwed;
+            calculatedResults.totalTipOut = totalTipOut;
+            calculatedResults.dueback = dueback;
         }
 
         async function submitToSheet() {
