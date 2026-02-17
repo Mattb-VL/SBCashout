@@ -912,8 +912,13 @@
                 let hasEmptyFields = false;
 
                 for (let entry of hoursEntries) {
-                    const name = entry.querySelector('.hours-name').value.trim();
-                    const hours = parseFloat(entry.querySelector('.hours-worked').value) || 0;
+                    const nameInput = entry.querySelector('.hours-name');
+                    const hoursInput = entry.querySelector('.hours-worked');
+                    
+                    if (!nameInput || !hoursInput) continue; // Skip malformed entries
+                    
+                    const name = nameInput.value.trim();
+                    const hours = parseFloat(hoursInput.value) || 0;
                     
                     if (name && hours > 0) {
                         hoursData.push({ name, hours });
@@ -972,8 +977,13 @@
                     let hasEmptyFields = false;
 
                     for (let entry of hoursEntries) {
-                        const name = entry.querySelector('.bartender-hours-name').value.trim();
-                        const hours = parseFloat(entry.querySelector('.bartender-hours-worked').value) || 0;
+                        const nameInput = entry.querySelector('.bartender-hours-name');
+                        const hoursInput = entry.querySelector('.bartender-hours-worked');
+                        
+                        if (!nameInput || !hoursInput) continue; // Skip malformed entries
+                        
+                        const name = nameInput.value.trim();
+                        const hours = parseFloat(hoursInput.value) || 0;
                         
                         if (name && hours > 0) {
                             hoursData.push({ name, hours });
