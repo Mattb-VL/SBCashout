@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Server Cashout</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #FF6B35;
+            --primary-dark: #E85A2A;
+            --secondary: #4ECDC4;
+            --bg: #1A1A2E;
+            --card: #16213E;
+            --text: #EAEAEA;
+            --text-dim: #9BA4B5;
+            --success: #5FD068;
+            --warning: #FFD93D;
+            --error: #FF5E5B;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            padding: 1.5rem 1.25rem 2rem;
+            box-shadow: 0 4px 20px rgba(255, 107, 53, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            margin-top: 0.25rem;
+            opacity: 0.9;
+            font-size: 0.95rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .date-display {
+            margin-top: 0.75rem;
+            font-family: 'DM Mono', monospace;
+            font-size: 0.85rem;
+            opacity: 0.8;
+            position: relative;
+            z-index: 1;
+        }
+
+        .container {
+            padding: 1.25rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .card h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+            color: var(--secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card h2::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: var(--secondary);
+            border-radius: 2px;
+        }
+
+        .input-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-dim);
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper::before {
+            content: '$';
+            position: absolute;
+            left: 1rem;
+            font-weight: 600;
+            color: var(--text-dim);
+            font-size: 1.1rem;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"] {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 1.1rem;
+            font-family: 'DM Mono', monospace;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .input-wrapper input[type="number"] {
+            padding-left: 2rem;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        input[type="date"]:focus {
+            outline: none;
+            border-color: var(--secondary);
+            background: rgba(0, 0, 0, 0.5);
+            box-shadow: 0 0 0 4px rgba(78, 205, 196, 0.1);
+        }
+
+        input::placeholder {
+            color: var(--text-dim);
+            opacity: 0.5;
+        }
+
+        .button {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--secondary) 0%, #3DBDB4 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3);
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(78, 205, 196, 0.4);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .button:disabled {
+            background: rgba(255, 255, 255, 0.1);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .results {
+            display: none;
+        }
+
+        .results.visible {
+            display: block;
+            animation: slideUp 0.4s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .result-row:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        .result-value {
+            font-family: 'DM Mono', monospace;
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--text);
+        }
+
+        .result-value.highlight {
+            color: var(--secondary);
+            font-size: 1.3rem;
+        }
+
+        .result-value.negative {
+            color: var(--error);
+        }
+
+        .result-value.positive {
+            color: var(--success);
+        }
+
+        .divider {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--secondary), transparent);
+            margin: 1.25rem 0;
+            border-radius: 2px;
+        }
+
+        .manager-section {
+            background: rgba(255, 107, 53, 0.1);
+            border-left: 4px solid var(--primary);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1.25rem;
+        }
+
+        .manager-section h3 {
+            color: var(--primary);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.75rem;
+        }
+
+        .submit-button {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+        }
+
+        .submit-button:hover {
+            box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+        }
+
+        .success-message {
+            background: linear-gradient(135deg, var(--success) 0%, #4BC057 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: none;
+            animation: slideDown 0.4s ease;
+        }
+
+        .success-message.visible {
+            display: block;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .reset-button {
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: none;
+            margin-top: 0.75rem;
+            font-size: 0.95rem;
+            padding: 0.75rem;
+        }
+
+        .reset-button:hover {
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: none;
+        }
+
+        .checkbox-group {
+            margin-bottom: 1rem;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .checkbox-label:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 0.75rem;
+            cursor: pointer;
+            accent-color: var(--secondary);
+        }
+
+        .checkbox-label span {
+            font-size: 0.95rem;
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .custom-section {
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: rgba(78, 205, 196, 0.1);
+            border-left: 3px solid var(--secondary);
+            border-radius: 8px;
+            animation: slideDown 0.3s ease;
+        }
+
+        .custom-section .input-group {
+            margin-bottom: 1rem;
+        }
+
+        .custom-section input[type="text"],
+        .custom-section input[type="number"] {
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            padding: 0.75rem 1rem;
+        }
+
+        .split-type-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .split-type-btn {
+            flex: 1;
+            padding: 0.75rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .split-type-btn:hover {
+            background: rgba(0, 0, 0, 0.4);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .split-type-btn.active {
+            background: var(--secondary);
+            color: white;
+            border-color: var(--secondary);
+        }
+
+        .split-section {
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .hours-entry {
+            margin-bottom: 0.75rem;
+            padding: 0.75rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 0.5rem;
+            align-items: flex-end;
+        }
+
+        .hours-entry .input-group {
+            margin-bottom: 0;
+        }
+
+        .hours-entry label {
+            font-size: 0.85rem;
+            margin-bottom: 0.35rem;
+        }
+
+        .hours-name,
+        .hours-worked,
+        .bartender-hours-name,
+        .bartender-hours-worked {
+            font-size: 0.95rem !important;
+            padding: 0.65rem 0.75rem !important;
+        }
+
+        .add-hours-btn {
+            width: 100%;
+            padding: 0.65rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            color: var(--secondary);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 0.5rem;
+        }
+
+        .add-hours-btn:hover {
+            background: rgba(78, 205, 196, 0.1);
+            border-color: var(--secondary);
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .card {
+                padding: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🍽️ Server Cashout</h1>
+        <p>Daily tip & cash reconciliation</p>
+        <div class="date-display" id="dateDisplay"></div>
+    </div>
+
+    <div class="container">
+        <div class="success-message" id="successMessage">
+            ✓ Cashout submitted successfully!
+        </div>
+
+        <div class="card">
+            <h2>Server Information</h2>
+            
+            <div class="input-group">
+                <label for="cashoutDate">Cashout Date</label>
+                <input type="date" id="cashoutDate">
+            </div>
+
+            <div class="input-group">
+                <label for="cashoutId">Cashout ID</label>
+                <input type="text" id="cashoutId" placeholder="e.g., Name, Party PM, Dining 5">
+            </div>
+
+            <div class="input-group">
+                <label for="serverNames">Server Name(s)</label>
+                <input type="text" id="serverNames" placeholder="Single name or comma-separated for split">
+                <p style="font-size: 0.85rem; color: var(--text-dim); margin-top: 0.5rem; font-style: italic;">
+                    Multiple names = equal split unless customization selected below
+                </p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Sales Input</h2>
+            <div class="input-group">
+                <label for="totalSales">Total Sales</label>
+                <div class="input-wrapper">
+                    <input type="number" id="totalSales" step="0.01" placeholder="0.00" inputmode="decimal">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="totalCashDue">Total Cash Due</label>
+                <div class="input-wrapper">
+                    <input type="number" id="totalCashDue" step="0.01" placeholder="0.00" inputmode="decimal">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="foodSales">Food Sales</label>
+                <div class="input-wrapper">
+                    <input type="number" id="foodSales" step="0.01" placeholder="0.00" inputmode="decimal">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="beoSubtotal">BEO Subtotal (if applicable)</label>
+                <div class="input-wrapper">
+                    <input type="number" id="beoSubtotal" step="0.01" placeholder="0.00" inputmode="decimal">
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <h3 style="font-size: 0.95rem; color: var(--text-dim); margin-bottom: 0.75rem; margin-top: 0.5rem;">Customization Options</h3>
+            
+            <!-- Split Options -->
+            <div class="checkbox-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="splitOptionsMode" onchange="toggleSplitOptions()">
+                    <span>Split Options (hours-based split)</span>
+                </label>
+            </div>
+
+            <div id="splitOptionsSection" class="custom-section" style="display: none;">
+                <p style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 1rem; font-style: italic;">
+                    Enter hours worked for each server named above to split proportionally.
+                </p>
+
+                <div id="hoursInputs">
+                    <div class="hours-entry">
+                        <div class="input-row">
+                            <div class="input-group" style="flex: 2; margin-right: 0.5rem;">
+                                <label>Name</label>
+                                <input type="text" class="hours-name" placeholder="Enter name">
+                            </div>
+                            <div class="input-group" style="flex: 1;">
+                                <label>Hours</label>
+                                <input type="number" class="hours-worked" step="0.5" min="0" placeholder="0.0" inputmode="decimal">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="add-hours-btn" onclick="addHoursEntry()">+ Add Team Member</button>
+            </div>
+
+            <!-- Shared With Bartender -->
+            <div class="checkbox-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="sharedWithBartenderMode" onchange="toggleSharedWithBartender()">
+                    <span>Shared With Bartender (excludes bar tip-out)</span>
+                </label>
+            </div>
+
+            <div id="sharedWithBartenderSection" class="custom-section" style="display: none;">
+                <div class="split-type-buttons">
+                    <button type="button" class="split-type-btn active" id="bartenderEqualBtn" onclick="selectBartenderSplitType('equal')">
+                        Equal Split
+                    </button>
+                    <button type="button" class="split-type-btn" id="bartenderHoursBtn" onclick="selectBartenderSplitType('hours')">
+                        Hours-Based Split
+                    </button>
+                </div>
+
+                <div id="bartenderEqualSection" class="split-section">
+                    <p style="font-size: 0.85rem; color: var(--text-dim); margin-top: 0.5rem; font-style: italic;">
+                        Names entered above (including bartender) will be split equally. Bar tip-out excluded.
+                    </p>
+                </div>
+
+                <div id="bartenderHoursSection" class="split-section" style="display: none;">
+                    <div id="bartenderHoursInputs">
+                        <div class="hours-entry">
+                            <div class="input-row">
+                                <div class="input-group" style="flex: 2; margin-right: 0.5rem;">
+                                    <label>Name</label>
+                                    <input type="text" class="bartender-hours-name" placeholder="Enter name">
+                                </div>
+                                <div class="input-group" style="flex: 1;">
+                                    <label>Hours</label>
+                                    <input type="number" class="bartender-hours-worked" step="0.5" min="0" placeholder="0.0" inputmode="decimal">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="add-hours-btn" onclick="addBartenderHoursEntry()">+ Add Team Member</button>
+                    <p style="font-size: 0.85rem; color: var(--text-dim); margin-top: 0.75rem; font-style: italic;">
+                        Dueback will be split proportionally based on hours worked. Bar tip-out excluded.
+                    </p>
+                </div>
+            </div>
+
+            <button class="button" onclick="calculate()">Calculate Cashout</button>
+        </div>
+
+        <div class="results" id="results">
+            <div class="card">
+                <h2>Cashout Report</h2>
+                
+                <h3 style="font-size: 0.95rem; color: var(--secondary); margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Tip Out</h3>
+                
+                <div class="result-row">
+                    <span class="result-label">House (3.5%)</span>
+                    <span class="result-value" id="houseOwed">$0.00</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Busser (1%)</span>
+                    <span class="result-value" id="busserOwed">$0.00</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Bar (1%)</span>
+                    <span class="result-value" id="barOwed">$0.00</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Expo (1.5%)</span>
+                    <span class="result-value" id="expoOwed">$0.00</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Events (1% BEO)</span>
+                    <span class="result-value" id="eventsOwed">$0.00</span>
+                </div>
+                <div class="result-row" style="border-top: 2px solid var(--secondary); margin-top: 0.5rem; padding-top: 0.75rem;">
+                    <span class="result-label" style="font-weight: 700; color: var(--secondary);">Total Tip-Out</span>
+                    <span class="result-value" style="font-weight: 700; color: var(--secondary); font-size: 1.2rem;" id="totalTipOut">$0.00</span>
+                </div>
+
+                <div class="divider"></div>
+
+                <h3 style="font-size: 0.95rem; color: var(--secondary); margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Dueback</h3>
+                
+                <div id="duebackDisplay" style="text-align: center; padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem;">
+                    <div style="font-size: 2.5rem; font-weight: 700; font-family: 'DM Mono', monospace;" id="duebackFull">Owe: $0.00</div>
+                </div>
+
+                <div id="customDetails" style="display: none;"></div>
+
+                <button class="button submit-button" onclick="submitToSheet()">Submit to Google Sheets</button>
+                <button class="button reset-button" onclick="resetForm()">New Entry</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Display current date and set default cashout date
+        const dateDisplay = document.getElementById('dateDisplay');
+        const today = new Date();
+        const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+        dateDisplay.textContent = today.toLocaleDateString('en-US', options);
+
+        const cashoutDateInput = document.getElementById('cashoutDate');
+        const todayString = today.toISOString().split('T')[0];
+        cashoutDateInput.value = todayString;
+
+        let calculatedResults = null;
+        let currentBartenderSplitType = 'equal';
+
+        function toggleSplitOptions() {
+            const checkbox = document.getElementById('splitOptionsMode');
+            const section = document.getElementById('splitOptionsSection');
+            
+            if (checkbox.checked) {
+                section.style.display = 'block';
+                document.getElementById('sharedWithBartenderMode').checked = false;
+                toggleSharedWithBartender();
+            } else {
+                section.style.display = 'none';
+            }
+        }
+
+        function addHoursEntry() {
+            const container = document.getElementById('hoursInputs');
+            const newEntry = document.createElement('div');
+            newEntry.className = 'hours-entry';
+            newEntry.innerHTML = `
+                <div class="input-row">
+                    <div class="input-group" style="flex: 2; margin-right: 0.5rem;">
+                        <label>Name</label>
+                        <input type="text" class="hours-name" placeholder="Enter name">
+                    </div>
+                    <div class="input-group" style="flex: 1;">
+                        <label>Hours</label>
+                        <input type="number" class="hours-worked" step="0.5" min="0" placeholder="0.0" inputmode="decimal">
+                    </div>
+                </div>
+            `;
+            container.appendChild(newEntry);
+        }
+
+        function toggleSharedWithBartender() {
+            const checkbox = document.getElementById('sharedWithBartenderMode');
+            const section = document.getElementById('sharedWithBartenderSection');
+            
+            if (checkbox.checked) {
+                section.style.display = 'block';
+                document.getElementById('splitOptionsMode').checked = false;
+                toggleSplitOptions();
+            } else {
+                section.style.display = 'none';
+            }
+        }
+
+        function selectBartenderSplitType(type) {
+            currentBartenderSplitType = type;
+            
+            document.getElementById('bartenderEqualBtn').classList.toggle('active', type === 'equal');
+            document.getElementById('bartenderHoursBtn').classList.toggle('active', type === 'hours');
+            
+            document.getElementById('bartenderEqualSection').style.display = type === 'equal' ? 'block' : 'none';
+            document.getElementById('bartenderHoursSection').style.display = type === 'hours' ? 'block' : 'none';
+        }
+
+        function addBartenderHoursEntry() {
+            const container = document.getElementById('bartenderHoursInputs');
+            const newEntry = document.createElement('div');
+            newEntry.className = 'hours-entry';
+            newEntry.innerHTML = `
+                <div class="input-row">
+                    <div class="input-group" style="flex: 2; margin-right: 0.5rem;">
+                        <label>Name</label>
+                        <input type="text" class="bartender-hours-name" placeholder="Enter name">
+                    </div>
+                    <div class="input-group" style="flex: 1;">
+                        <label>Hours</label>
+                        <input type="number" class="bartender-hours-worked" step="0.5" min="0" placeholder="0.0" inputmode="decimal">
+                    </div>
+                </div>
+            `;
+            container.appendChild(newEntry);
+        }
+
+        function calculate() {
+            const cashoutDate = document.getElementById('cashoutDate').value;
+            const cashoutId = document.getElementById('cashoutId').value.trim();
+            const serverNamesInput = document.getElementById('serverNames').value.trim();
+            const totalSales = parseFloat(document.getElementById('totalSales').value) || 0;
+            const totalCashDue = parseFloat(document.getElementById('totalCashDue').value) || 0;
+            const foodSales = parseFloat(document.getElementById('foodSales').value) || 0;
+            const beoSubtotal = parseFloat(document.getElementById('beoSubtotal').value) || 0;
+
+            // Check customization modes
+            const splitOptionsMode = document.getElementById('splitOptionsMode').checked;
+            const sharedWithBartenderMode = document.getElementById('sharedWithBartenderMode').checked;
+
+            // Validation
+            if (!serverNamesInput) {
+                alert('Please enter server name(s)');
+                return;
+            }
+
+            if (!cashoutDate) {
+                alert('Please enter cashout date');
+                return;
+            }
+
+            if (totalSales === 0) {
+                alert('Please enter total sales');
+                return;
+            }
+
+            // Parse server names
+            const serverNames = serverNamesInput.split(',').map(s => s.trim()).filter(s => s);
+            const firstServerName = serverNames[0];
+
+            // Base calculations
+            const houseOwed = totalSales * 0.035;
+            const busserOwed = totalSales * 0.01;
+            let barOwed = totalSales * 0.01;
+            const expoOwed = foodSales * 0.015;  // 1.5% of Food Sales
+            const eventsOwed = beoSubtotal * 0.01;
+
+            let customizationDetails = null;
+            let adjustedDueback = 0;
+
+            // MODE 1: Split Options (Hours-based split)
+            if (splitOptionsMode) {
+                const hoursEntries = document.querySelectorAll('.hours-entry');
+                const hoursData = [];
+                let totalHours = 0;
+
+                for (let entry of hoursEntries) {
+                    const name = entry.querySelector('.hours-name').value.trim();
+                    const hours = parseFloat(entry.querySelector('.hours-worked').value) || 0;
+                    
+                    if (name && hours > 0) {
+                        hoursData.push({ name, hours });
+                        totalHours += hours;
+                    }
+                }
+
+                if (hoursData.length === 0) {
+                    alert('Please enter at least one team member with hours');
+                    return;
+                }
+
+                const totalTipOut = houseOwed + busserOwed + barOwed + expoOwed + eventsOwed;
+                const normalDueback = totalCashDue + totalTipOut;
+                
+                const firstServerHours = hoursData[0]?.hours || 0;
+                const serverHoursPercent = firstServerHours / totalHours;
+                adjustedDueback = normalDueback * serverHoursPercent;
+
+                customizationDetails = {
+                    mode: 'hours_split',
+                    hoursData: hoursData,
+                    totalHours: totalHours,
+                    totalDueback: normalDueback,
+                    serverShare: adjustedDueback
+                };
+            }
+            // MODE 2: Shared With Bartender
+            else if (sharedWithBartenderMode) {
+                barOwed = 0; // Exclude bar tip
+
+                if (currentBartenderSplitType === 'equal') {
+                    const staffCount = serverNames.length;
+                    const totalTipOut = houseOwed + busserOwed + barOwed + expoOwed + eventsOwed;
+                    const normalDueback = totalCashDue + totalTipOut;
+                    adjustedDueback = normalDueback / staffCount;
+
+                    customizationDetails = {
+                        mode: 'bartender_equal',
+                        staffList: serverNames,
+                        staffCount: staffCount,
+                        totalDueback: normalDueback,
+                        sharePerPerson: adjustedDueback
+                    };
+                } else {
+                    const hoursEntries = document.querySelectorAll('#bartenderHoursInputs .hours-entry');
+                    const hoursData = [];
+                    let totalHours = 0;
+
+                    for (let entry of hoursEntries) {
+                        const name = entry.querySelector('.bartender-hours-name').value.trim();
+                        const hours = parseFloat(entry.querySelector('.bartender-hours-worked').value) || 0;
+                        
+                        if (name && hours > 0) {
+                            hoursData.push({ name, hours });
+                            totalHours += hours;
+                        }
+                    }
+
+                    if (hoursData.length === 0) {
+                        alert('Please enter at least one team member with hours');
+                        return;
+                    }
+
+                    const totalTipOut = houseOwed + busserOwed + barOwed + expoOwed + eventsOwed;
+                    const normalDueback = totalCashDue + totalTipOut;
+                    
+                    const firstServerHours = hoursData[0]?.hours || 0;
+                    const serverHoursPercent = firstServerHours / totalHours;
+                    adjustedDueback = normalDueback * serverHoursPercent;
+
+                    customizationDetails = {
+                        mode: 'bartender_hours',
+                        hoursData: hoursData,
+                        totalHours: totalHours,
+                        totalDueback: normalDueback,
+                        serverShare: adjustedDueback
+                    };
+                }
+            }
+            // MODE 3: Auto-split from multiple names (no customization)
+            else if (serverNames.length > 1) {
+                const staffCount = serverNames.length;
+                const totalTipOut = houseOwed + busserOwed + barOwed + expoOwed + eventsOwed;
+                const normalDueback = totalCashDue + totalTipOut;
+                adjustedDueback = normalDueback / staffCount;
+
+                customizationDetails = {
+                    mode: 'auto_equal',
+                    staffList: serverNames,
+                    staffCount: staffCount,
+                    totalDueback: normalDueback,
+                    sharePerPerson: adjustedDueback
+                };
+            }
+
+            // Calculate final values
+            let totalTipOut, dueback;
+            
+            if (customizationDetails) {
+                totalTipOut = houseOwed + busserOwed + barOwed + expoOwed + eventsOwed;
+                dueback = adjustedDueback;
+            } else {
+                totalTipOut = houseOwed + busserOwed + barOwed + expoOwed + eventsOwed;
+                dueback = totalCashDue + totalTipOut;
+            }
+
+            const totalTipPercent = totalSales > 0 ? (totalCashDue / totalSales) * 100 : 0;
+            const earnedPercent = totalSales > 0 ? ((totalCashDue - totalTipOut) / totalSales) * 100 : 0;
+
+            // Store results
+            calculatedResults = {
+                cashoutDate,
+                cashoutId,
+                serverNames: serverNamesInput,
+                firstServerName,
+                timestamp: today.toISOString(),
+                totalSales,
+                totalCashDue,
+                foodSales,
+                beoSubtotal,
+                houseOwed,
+                busserOwed,
+                barOwed,
+                expoOwed,
+                eventsOwed,
+                totalTipOut,
+                dueback,
+                totalTipPercent,
+                earnedPercent,
+                customizationMode: customizationDetails ? customizationDetails.mode : 'none',
+                customizationDetails
+            };
+
+            // Display results
+            document.getElementById('houseOwed').textContent = formatCurrency(houseOwed);
+            document.getElementById('busserOwed').textContent = formatCurrency(busserOwed);
+            document.getElementById('barOwed').textContent = barOwed > 0 ? formatCurrency(barOwed) : '$0.00 (excluded)';
+            document.getElementById('expoOwed').textContent = formatCurrency(expoOwed);
+            document.getElementById('eventsOwed').textContent = formatCurrency(eventsOwed);
+            document.getElementById('totalTipOut').textContent = formatCurrency(totalTipOut);
+            
+            // Dueback display with color coding
+            const duebackDisplay = document.getElementById('duebackDisplay');
+            const duebackFull = document.getElementById('duebackFull');
+            
+            if (dueback < 0) {
+                // Negative = Restaurant owes server (Green) - "Dueback: -$X"
+                duebackDisplay.style.background = 'linear-gradient(135deg, rgba(95, 208, 104, 0.2), rgba(75, 192, 87, 0.2))';
+                duebackDisplay.style.border = '2px solid var(--success)';
+                duebackFull.style.color = 'var(--success)';
+                duebackFull.textContent = 'Dueback: -' + formatCurrency(Math.abs(dueback));
+            } else {
+                // Positive = Server submits to restaurant (Red) - "Submit: $X"
+                duebackDisplay.style.background = 'linear-gradient(135deg, rgba(255, 94, 91, 0.2), rgba(255, 107, 53, 0.2))';
+                duebackDisplay.style.border = '2px solid var(--error)';
+                duebackFull.style.color = 'var(--error)';
+                duebackFull.textContent = 'Submit: ' + formatCurrency(dueback);
+            }
+
+            // Display customization details
+            displayCustomizationDetails(customizationDetails);
+
+            document.getElementById('results').classList.add('visible');
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function displayCustomizationDetails(details) {
+            const container = document.getElementById('customDetails');
+            
+            if (!details) {
+                container.style.display = 'none';
+                return;
+            }
+            
+            let html = '<div style="margin-top: 1rem; padding: 0.75rem; background: rgba(0,0,0,0.2); border-radius: 6px; font-size: 0.85rem;">';
+            
+            if (details.mode === 'hours_split') {
+                html += '<strong>Hours-Based Split:</strong><br>';
+                details.hoursData.forEach(person => {
+                    const percent = (person.hours / details.totalHours * 100).toFixed(1);
+                    const share = details.totalDueback * (person.hours / details.totalHours);
+                    html += `• ${person.name}: ${person.hours} hrs (${percent}%) = ${formatCurrency(share)}<br>`;
+                });
+                html += `<br><strong>Total Hours:</strong> ${details.totalHours}`;
+                html += `<br><strong>Total Dueback:</strong> ${formatCurrency(details.totalDueback)}`;
+                
+            } else if (details.mode === 'bartender_equal') {
+                html += '<strong>Shared With Bartender (Equal):</strong><br>';
+                html += '• ' + details.staffList.join('<br>• ');
+                html += `<br><br><strong>Total Dueback:</strong> ${formatCurrency(details.totalDueback)}`;
+                html += `<br><strong>Each person owes:</strong> ${formatCurrency(details.sharePerPerson)}`;
+                html += '<br><strong>Bar tip-out:</strong> EXCLUDED';
+                
+            } else if (details.mode === 'bartender_hours') {
+                html += '<strong>Shared With Bartender (Hours):</strong><br>';
+                details.hoursData.forEach(person => {
+                    const percent = (person.hours / details.totalHours * 100).toFixed(1);
+                    const share = details.totalDueback * (person.hours / details.totalHours);
+                    html += `• ${person.name}: ${person.hours} hrs (${percent}%) = ${formatCurrency(share)}<br>`;
+                });
+                html += `<br><strong>Total Hours:</strong> ${details.totalHours}`;
+                html += `<br><strong>Total Dueback:</strong> ${formatCurrency(details.totalDueback)}`;
+                html += '<br><strong>Bar tip-out:</strong> EXCLUDED';
+                
+            } else if (details.mode === 'auto_equal') {
+                html += '<strong>Auto Equal Split:</strong><br>';
+                html += '• ' + details.staffList.join('<br>• ');
+                html += `<br><br><strong>Total Dueback:</strong> ${formatCurrency(details.totalDueback)}`;
+                html += `<br><strong>Each person owes:</strong> ${formatCurrency(details.sharePerPerson)}`;
+            }
+            
+            html += '</div>';
+            container.innerHTML = html;
+            container.style.display = 'block';
+        }
+
+        function formatCurrency(value) {
+            const formatted = Math.abs(value).toFixed(2);
+            return value < 0 ? '-$' + formatted : '$' + formatted;
+        }
+
+        async function submitToSheet() {
+            if (!calculatedResults) {
+                alert('Please calculate first');
+                return;
+            }
+
+            alert('To enable Google Sheets integration:\n\n1. Create a Google Apps Script web app\n2. Deploy it and add the URL below\n3. The script will automatically organize entries by month and day\n\nFor now, this demo saves data locally. Check the console for the data structure.');
+            
+            console.log('Data ready to submit:', calculatedResults);
+            
+            document.getElementById('successMessage').classList.add('visible');
+            setTimeout(() => {
+                document.getElementById('successMessage').classList.remove('visible');
+            }, 3000);
+
+            // In production, uncomment and add your Google Apps Script URL:
+            /*
+            try {
+                const response = await fetch('YOUR_GOOGLE_APPS_SCRIPT_URL', {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(calculatedResults)
+                });
+                
+                document.getElementById('successMessage').classList.add('visible');
+                setTimeout(() => {
+                    document.getElementById('successMessage').classList.remove('visible');
+                    resetForm();
+                }, 3000);
+            } catch (error) {
+                alert('Error submitting to Google Sheets: ' + error.message);
+            }
+            */
+        }
+
+        function resetForm() {
+            document.getElementById('cashoutDate').value = todayString;
+            document.getElementById('cashoutId').value = '';
+            document.getElementById('serverNames').value = '';
+            document.getElementById('totalSales').value = '';
+            document.getElementById('totalCashDue').value = '';
+            document.getElementById('foodSales').value = '';
+            document.getElementById('beoSubtotal').value = '';
+            
+            document.getElementById('splitOptionsMode').checked = false;
+            document.getElementById('splitOptionsSection').style.display = 'none';
+            
+            const hoursContainer = document.getElementById('hoursInputs');
+            hoursContainer.innerHTML = `
+                <div class="hours-entry">
+                    <div class="input-row">
+                        <div class="input-group" style="flex: 2; margin-right: 0.5rem;">
+                            <label>Name</label>
+                            <input type="text" class="hours-name" placeholder="Enter name">
+                        </div>
+                        <div class="input-group" style="flex: 1;">
+                            <label>Hours</label>
+                            <input type="number" class="hours-worked" step="0.5" min="0" placeholder="0.0" inputmode="decimal">
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('sharedWithBartenderMode').checked = false;
+            document.getElementById('sharedWithBartenderSection').style.display = 'none';
+            
+            const bartenderHoursContainer = document.getElementById('bartenderHoursInputs');
+            bartenderHoursContainer.innerHTML = `
+                <div class="hours-entry">
+                    <div class="input-row">
+                        <div class="input-group" style="flex: 2; margin-right: 0.5rem;">
+                            <label>Name</label>
+                            <input type="text" class="bartender-hours-name" placeholder="Enter name">
+                        </div>
+                        <div class="input-group" style="flex: 1;">
+                            <label>Hours</label>
+                            <input type="number" class="bartender-hours-worked" step="0.5" min="0" placeholder="0.0" inputmode="decimal">
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            selectBartenderSplitType('equal');
+            
+            document.getElementById('results').classList.remove('visible');
+            calculatedResults = null;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Allow Enter key to calculate
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !document.getElementById('results').classList.contains('visible')) {
+                calculate();
+            }
+        });
+    </script>
+</body>
+</html>
