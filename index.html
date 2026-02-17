@@ -510,10 +510,6 @@
     </div>
 
     <div class="container">
-        <div class="success-message" id="successMessage">
-            ✓ Cashout submitted successfully!
-        </div>
-
         <div class="card">
             <h2>Server Information</h2>
             
@@ -692,7 +688,11 @@
 
                 <div id="customDetails" style="display: none;"></div>
 
-                <button class="button submit-button" onclick="submitToSheet()">Submit Cashout</button>
+                <div class="success-message" id="successMessage" style="margin-bottom: 1rem;">
+                    ✓ Cashout submitted successfully!
+                </div>
+
+                <button class="button submit-button" id="submitButton" onclick="submitToSheet()">Submit Cashout</button>
                 <button class="button reset-button" onclick="resetForm()">New Entry</button>
             </div>
         </div>
@@ -1205,11 +1205,17 @@
                     body: JSON.stringify(calculatedResults)
                 });
 
+                // Show success message
                 document.getElementById('successMessage').classList.add('visible');
-                setTimeout(() => {
-                    document.getElementById('successMessage').classList.remove('visible');
+                
+                // Change Submit button to Finish button
+                const submitButton = document.getElementById('submitButton');
+                submitButton.textContent = 'Finish';
+                submitButton.onclick = function() {
                     resetForm();
-                }, 3000);
+                };
+                submitButton.classList.remove('submit-button');
+                submitButton.style.background = 'linear-gradient(135deg, var(--success) 0%, #4BC057 100%)';
 
             } catch (error) {
                 alert('Error submitting to Google Sheets: ' + error.message);
@@ -1264,6 +1270,16 @@
             `;
             
             selectBartenderSplitType('equal');
+            
+            // Reset submit button
+            const submitButton = document.getElementById('submitButton');
+            submitButton.textContent = 'Submit Cashout';
+            submitButton.onclick = submitToSheet;
+            submitButton.classList.add('submit-button');
+            submitButton.style.background = '';
+            
+            // Hide success message
+            document.getElementById('successMessage').classList.remove('visible');
             
             document.getElementById('results').classList.remove('visible');
             calculatedResults = null;
