@@ -1013,7 +1013,25 @@
             container.appendChild(newEntry);
         }
 
+        function highlightField(fieldId) {
+            const field = document.getElementById(fieldId);
+            field.style.border = '2px solid #FF5E5B';
+            field.style.boxShadow = '0 0 0 4px rgba(255, 94, 91, 0.2)';
+        }
+
+        function clearValidationErrors() {
+            const fields = ['serverNames', 'cashoutDate', 'totalSales', 'totalCashDue', 'foodSales'];
+            fields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                field.style.border = '';
+                field.style.boxShadow = '';
+            });
+        }
+
         function calculate() {
+            // Clear any previous validation highlighting
+            clearValidationErrors();
+            
             const cashoutDate = document.getElementById('cashoutDate').value;
             const cashoutId = document.getElementById('cashoutId').value.trim();
             const serverNamesInput = document.getElementById('serverNames').value.trim();
@@ -1027,19 +1045,36 @@
             const sharedWithBartenderMode = document.getElementById('sharedWithBartenderMode').checked;
             const barCashoutMode = document.getElementById('barCashoutMode').checked;
 
-            // Validation
+            // Validation with visual feedback
+            let missingFields = [];
+            
             if (!serverNamesInput) {
-                alert('Please enter server name(s)');
-                return;
+                highlightField('serverNames');
+                missingFields.push('Server Name(s)');
             }
 
             if (!cashoutDate) {
-                alert('Please enter cashout date');
-                return;
+                highlightField('cashoutDate');
+                missingFields.push('Cashout Date');
             }
 
             if (totalSales === 0) {
-                alert('Please enter total sales');
+                highlightField('totalSales');
+                missingFields.push('Total Sales');
+            }
+            
+            if (totalCashDue === 0 && document.getElementById('totalCashDue').value.trim() === '') {
+                highlightField('totalCashDue');
+                missingFields.push('Total Cash Due');
+            }
+            
+            if (foodSales === 0 && document.getElementById('foodSales').value.trim() === '') {
+                highlightField('foodSales');
+                missingFields.push('Food Sales');
+            }
+            
+            if (missingFields.length > 0) {
+                alert('Please fill in the following required fields:\n\n• ' + missingFields.join('\n• '));
                 return;
             }
 
@@ -1595,6 +1630,15 @@
             if (e.key === 'Enter' && !document.getElementById('results').classList.contains('visible')) {
                 calculate();
             }
+        });
+
+        // Clear validation highlighting when user starts typing in required fields
+        ['serverNames', 'cashoutDate', 'totalSales', 'totalCashDue', 'foodSales'].forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            field.addEventListener('input', function() {
+                this.style.border = '';
+                this.style.boxShadow = '';
+            });
         });
     </script>
 </body>
