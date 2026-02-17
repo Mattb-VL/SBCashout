@@ -1057,16 +1057,6 @@
                 return;
             }
 
-            alert('To enable Google Sheets integration:\n\n1. Create a Google Apps Script web app\n2. Deploy it and add the URL below\n3. The script will automatically organize entries by month and day\n\nFor now, this demo saves data locally. Check the console for the data structure.');
-            
-            console.log('Data ready to submit:', calculatedResults);
-            
-            document.getElementById('successMessage').classList.add('visible');
-            setTimeout(() => {
-                document.getElementById('successMessage').classList.remove('visible');
-            }, 3000);
-
-            // In production, uncomment and add your Google Apps Script URL:
             try {
                 const response = await fetch('https://script.google.com/macros/s/AKfycbx_o61R_GE2kHLN_QueDwbnzaBCwUSyFyCvmSelrLVMjkNW-UFstGEDkLew1E-QXoor/exec', {
                     method: 'POST',
@@ -1076,12 +1066,13 @@
                     },
                     body: JSON.stringify(calculatedResults)
                 });
-                
+
                 document.getElementById('successMessage').classList.add('visible');
                 setTimeout(() => {
                     document.getElementById('successMessage').classList.remove('visible');
                     resetForm();
                 }, 3000);
+
             } catch (error) {
                 alert('Error submitting to Google Sheets: ' + error.message);
             }
