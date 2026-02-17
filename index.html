@@ -722,9 +722,42 @@
                 section.style.display = 'block';
                 document.getElementById('sharedWithBartenderMode').checked = false;
                 toggleSharedWithBartender();
+                
+                // Auto-populate with server names
+                populateHoursFromServerNames();
             } else {
                 section.style.display = 'none';
             }
+        }
+
+        function populateHoursFromServerNames() {
+            const serverNamesInput = document.getElementById('serverNames').value.trim();
+            if (!serverNamesInput) return;
+            
+            const serverNames = serverNamesInput.split(',').map(s => s.trim()).filter(s => s);
+            const container = document.getElementById('hoursInputs');
+            
+            // Clear existing entries
+            container.innerHTML = '';
+            
+            // Add one entry per server
+            serverNames.forEach(name => {
+                const newEntry = document.createElement('div');
+                newEntry.className = 'hours-entry';
+                newEntry.innerHTML = `
+                    <div class="input-row">
+                        <div class="input-group" style="flex: 2; margin-right: 0.5rem;">
+                            <label>Name</label>
+                            <input type="text" class="hours-name" placeholder="Enter name" value="${name}">
+                        </div>
+                        <div class="input-group" style="flex: 1;">
+                            <label>Hours</label>
+                            <input type="number" class="hours-worked" step="0.5" min="0" placeholder="0.0" inputmode="decimal">
+                        </div>
+                    </div>
+                `;
+                container.appendChild(newEntry);
+            });
         }
 
         function addHoursEntry() {
@@ -754,6 +787,11 @@
                 section.style.display = 'block';
                 document.getElementById('splitOptionsMode').checked = false;
                 toggleSplitOptions();
+                
+                // Auto-populate with server names when hours-based is selected
+                if (currentBartenderSplitType === 'hours') {
+                    populateBartenderHoursFromServerNames();
+                }
             } else {
                 section.style.display = 'none';
             }
@@ -767,6 +805,41 @@
             
             document.getElementById('bartenderEqualSection').style.display = type === 'equal' ? 'block' : 'none';
             document.getElementById('bartenderHoursSection').style.display = type === 'hours' ? 'block' : 'none';
+            
+            // Auto-populate when switching to hours-based
+            if (type === 'hours') {
+                populateBartenderHoursFromServerNames();
+            }
+        }
+
+        function populateBartenderHoursFromServerNames() {
+            const serverNamesInput = document.getElementById('serverNames').value.trim();
+            if (!serverNamesInput) return;
+            
+            const serverNames = serverNamesInput.split(',').map(s => s.trim()).filter(s => s);
+            const container = document.getElementById('bartenderHoursInputs');
+            
+            // Clear existing entries
+            container.innerHTML = '';
+            
+            // Add one entry per server
+            serverNames.forEach(name => {
+                const newEntry = document.createElement('div');
+                newEntry.className = 'hours-entry';
+                newEntry.innerHTML = `
+                    <div class="input-row">
+                        <div class="input-group" style="flex: 2; margin-right: 0.5rem;">
+                            <label>Name</label>
+                            <input type="text" class="bartender-hours-name" placeholder="Enter name" value="${name}">
+                        </div>
+                        <div class="input-group" style="flex: 1;">
+                            <label>Hours</label>
+                            <input type="number" class="bartender-hours-worked" step="0.5" min="0" placeholder="0.0" inputmode="decimal">
+                        </div>
+                    </div>
+                `;
+                container.appendChild(newEntry);
+            });
         }
 
         function addBartenderHoursEntry() {
