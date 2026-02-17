@@ -1085,16 +1085,39 @@
             const duebackDisplay = document.getElementById('duebackDisplay');
             const duebackFull = document.getElementById('duebackFull');
             
-            if (dueback < 0) {
-                // Negative = Restaurant owes server (Green) - "Dueback: -$X"
+            // Check if this is a hours-based split
+            const isHoursSplit = customizationDetails && 
+                                (customizationDetails.mode === 'split-hours' || 
+                                 customizationDetails.mode === 'split-w/bar-hours');
+            
+            if (isHoursSplit && dueback < 0) {
+                // Hours-based split with negative dueback - show breakdown for each person
                 duebackDisplay.style.background = 'linear-gradient(135deg, rgba(95, 208, 104, 0.2), rgba(75, 192, 87, 0.2))';
                 duebackDisplay.style.border = '2px solid var(--success)';
+                duebackDisplay.style.padding = '1.5rem';
+                
+                let html = '<div style="font-size: 1.5rem; font-weight: 700; color: var(--success); margin-bottom: 1rem;">Duebacks:</div>';
+                
+                customizationDetails.hoursData.forEach(person => {
+                    const personShare = customizationDetails.totalDueback * (person.hours / customizationDetails.totalHours);
+                    html += `<div style="font-size: 1.2rem; font-weight: 600; color: var(--success); margin: 0.5rem 0; font-family: 'DM Mono', monospace;">`;
+                    html += `${person.name}: ${person.hours} hrs = ${formatCurrency(personShare)}`;
+                    html += `</div>`;
+                });
+                
+                duebackFull.innerHTML = html;
+            } else if (dueback < 0) {
+                // Regular negative dueback (not hours-based)
+                duebackDisplay.style.background = 'linear-gradient(135deg, rgba(95, 208, 104, 0.2), rgba(75, 192, 87, 0.2))';
+                duebackDisplay.style.border = '2px solid var(--success)';
+                duebackDisplay.style.padding = '1.5rem';
                 duebackFull.style.color = 'var(--success)';
                 duebackFull.textContent = 'Dueback: -' + formatCurrency(Math.abs(dueback));
             } else {
                 // Positive = Server submits to restaurant (Red) - "Submit: $X"
                 duebackDisplay.style.background = 'linear-gradient(135deg, rgba(255, 94, 91, 0.2), rgba(255, 107, 53, 0.2))';
                 duebackDisplay.style.border = '2px solid var(--error)';
+                duebackDisplay.style.padding = '1.5rem';
                 duebackFull.style.color = 'var(--error)';
                 duebackFull.textContent = 'Submit: ' + formatCurrency(dueback);
             }
@@ -1193,14 +1216,41 @@
             const duebackDisplay = document.getElementById('duebackDisplay');
             const duebackFull = document.getElementById('duebackFull');
             
-            if (dueback < 0) {
+            // Check if this is a hours-based split
+            const isHoursSplit = calculatedResults.customizationDetails && 
+                                (calculatedResults.customizationDetails.mode === 'split-hours' || 
+                                 calculatedResults.customizationDetails.mode === 'split-w/bar-hours');
+            
+            if (isHoursSplit && dueback < 0) {
+                // Hours-based split with negative dueback - show breakdown for each person
                 duebackDisplay.style.background = 'linear-gradient(135deg, rgba(95, 208, 104, 0.2), rgba(75, 192, 87, 0.2))';
                 duebackDisplay.style.border = '2px solid var(--success)';
+                duebackDisplay.style.padding = '1.5rem';
+                
+                // Recalculate total dueback with edited tip-outs
+                const totalDuebackWithEdits = totalCashDue + totalTipOut;
+                
+                let html = '<div style="font-size: 1.5rem; font-weight: 700; color: var(--success); margin-bottom: 1rem;">Duebacks:</div>';
+                
+                calculatedResults.customizationDetails.hoursData.forEach(person => {
+                    const personShare = totalDuebackWithEdits * (person.hours / calculatedResults.customizationDetails.totalHours);
+                    html += `<div style="font-size: 1.2rem; font-weight: 600; color: var(--success); margin: 0.5rem 0; font-family: 'DM Mono', monospace;">`;
+                    html += `${person.name}: ${person.hours} hrs = ${formatCurrency(personShare)}`;
+                    html += `</div>`;
+                });
+                
+                duebackFull.innerHTML = html;
+            } else if (dueback < 0) {
+                // Regular negative dueback
+                duebackDisplay.style.background = 'linear-gradient(135deg, rgba(95, 208, 104, 0.2), rgba(75, 192, 87, 0.2))';
+                duebackDisplay.style.border = '2px solid var(--success)';
+                duebackDisplay.style.padding = '1.5rem';
                 duebackFull.style.color = 'var(--success)';
                 duebackFull.textContent = 'Dueback: -' + formatCurrency(Math.abs(dueback));
             } else {
                 duebackDisplay.style.background = 'linear-gradient(135deg, rgba(255, 94, 91, 0.2), rgba(255, 107, 53, 0.2))';
                 duebackDisplay.style.border = '2px solid var(--error)';
+                duebackDisplay.style.padding = '1.5rem';
                 duebackFull.style.color = 'var(--error)';
                 duebackFull.textContent = 'Submit: ' + formatCurrency(dueback);
             }
